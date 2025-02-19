@@ -3,7 +3,7 @@ javascript:
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.as{1,2}embly\.go\.kr/;
 var regex_vforkor = /https:\/\/vforkorea\.com\/assem\//;
-var isInitial,isLogin,opinionStr,pattern,opinionSelCnt,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble;
+var isInitial,isLogin,opinionStr,pattern,opinionSelCnt,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble,isLawful;
 var assembleDo = function() {
 	if (regex_pa.test(cururl)) {
 		var regOp = document.querySelectorAll('ul#cnts-tab-list li a')[2];
@@ -36,18 +36,15 @@ var assembleDo = function() {
 		} else {
 			if(!isInitial || isIgnoreChk) {
 				if (!selectAssemble) {
-					selectAssemble = prompt("어떤 의견을 선택하십니까?\r\n1:위험의견\r\n2:선법의견");
+					selectAssemble = prompt("어떤 의견을 선택하십니까?\r\n1:위험의견\r\n2:선법의견\r\n*기본 선택 : 위험의견");
+					selectAssemble = !isNaN(selectAssemble) && selectAssemble != 0  ? selectAssemble : 1;
 					if (selectAssemble == 1) {
-						pattern = /위험의견(\d+)/g;
 						opinionStr = "위험의견";
 					} else if (selectAssemble == 2) {
-						pattern = /선법의견(\d+)/g;
 						opinionStr = "선법의견";
 					} else {
 						return 0;
 					};
-					opinionSelCnt = prompt(opinionStr+" 중 입력한 개수 이상의 의견만 선택합니다.\r\n*기본 10");
-					if (opinionSelCnt == undefined) {return 0;}
 					opinionSelCnt = !isNaN(Number(opinionSelCnt)) && opinionSelCnt != 0 ? opinionSelCnt : 10;
 					opinionPerCnt = Number(prompt("한번에 열 의견의 개수를 입력하세요\r\n*기본 10"));
 					if (opinionPerCnt == undefined) {return 0;}
@@ -55,16 +52,14 @@ var assembleDo = function() {
 				};
 				opinionList=[];
 				document.querySelectorAll('tbody#tbody > tr').forEach(tr=>{
-					opinionCurStr = tr.querySelector('button').innerHTML;
-					var opinionMatches = [...opinionCurStr.matchAll(pattern)];
-					if(opinionMatches.length) opinionCurCnt = opinionMatches[0][1];
-					opinionCurCnt = opinionMatches.length ? opinionMatches[0][1] : 0;
+					var queryStr = 'p.comment';
+					if(selectAssemble==2){queryStr+='.Y'} else if(selectAssemble==1) {queryStr+='.N'};
+					var isSelected = tr.querySelector(queryStr);
 					var isChk = tr.querySelector('input[type=checkbox]').checked;
-					if(opinionCurCnt>opinionSelCnt && (isIgnoreChk || !isChk)) {
+					if(isSelected && (isIgnoreChk || !isChk)) {
 						opinionList.push(tr);
 					}
 				});
-
 				opinionCnt=0;
 				opinionViewCnt=0;
 				isInitial=1;
@@ -84,7 +79,7 @@ var assembleDo = function() {
 						eCnt=opinionList.length-1;
 					}
 					if (opinionList.length <= sCnt){
-						alert('확인할 입법이 없습니다');
+						alert('확인할 입법이 없습니다.');
 						return 0;
 					}
 					var isOpen = confirm('선택한 입법안이 총'+opinionList.length+'개 입니다.\r\n' + (sCnt+1) + ' ~ ' + (eCnt+1) + '의 입법안을 열겠습니다.');
@@ -94,9 +89,12 @@ var assembleDo = function() {
 							op = opinionList[sCnt];
 							opChk = op.querySelector('input[type=checkbox]');
 							if (!opChk.checked) {opChk.click();};
-							opa = op.querySelector('a');
-							opa.href = opa.href.replace("lgsltpaOngoing/view.do","lgsltpaOpn/forInsert.do").replace("lgsltpaOpn/list.do","lgsltpaOpn/forInsert.do");
-							opa.click();
+							const vlink = document.createElement("a");
+							vlink.target = "_blank";
+							vlink.href = op.querySelector('a').href.replace("lgsltpaOngoing/view.do","lgsltpaOpn/forInsert.do").replace("lgsltpaOpn/list.do","lgsltpaOpn/forInsert.do");
+							document.body.appendChild(vlink);
+							vlink.click();
+							vlink.remove();
 							sCnt++;
 						}
 					}

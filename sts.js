@@ -1,9 +1,10 @@
 
 javascript:
+var curVersion = '250221.1';
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.as{1,2}embly\.go\.kr/;
 var regex_vforkor = /https:\/\/vforkorea\.com\/assem\//;
-var isInitial,isLogin,opinionStr,pattern,opinionSelCnt,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble,isLawful;
+var isNotIinitial,isLogin,opinionStr,pattern,opinionSelCnt,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble,isLawful;
 var assembleDo = function() {
 	if (regex_pa.test(cururl)) {
 		var regOp = document.querySelectorAll('ul#cnts-tab-list li a')[2];
@@ -26,7 +27,7 @@ var assembleDo = function() {
 		};
 	} else if (regex_vforkor.test(cururl)) {
 		if(!isLogin) {
-			isLogin = confirm("국회사이트에 로그인 하시겠습니까?\r\n의견 등록 페이지로 페이지를 열기 때문에 미리 로그인 하셔야 합니다.\r\n확인 시 국회 로그인 사이트로 이동합니다.");
+			isLogin = confirm("국회사이트에 로그인 하시겠습니까?\r\n의견 등록 페이지로 페이지를 열기 때문에 미리 로그인 하셔야 합니다.\r\n확인 시 국회 로그인 사이트로 이동합니다.\r\n\r\n현재 스크립트 버전 : "+curVersion);
 			if(isLogin) {
 				window.open('https://member.assembly.go.kr/login/loginPage.do?procUrl=https://pal.assembly.go.kr/napal/checkLogin.do&returnUrl=https%3A%2F%2Fpal.assembly.go.kr%2Fnapal%2Fmain%2Fmain.do','_blank');
 			} else {
@@ -34,7 +35,7 @@ var assembleDo = function() {
 				assembleDo();
 			}
 		} else {
-			if(!isInitial || isIgnoreChk) {
+			if(!isNotIinitial) {
 				if (!selectAssemble) {
 					selectAssemble = prompt("어떤 의견을 선택하십니까?\r\n1:위험의견\r\n2:선법의견\r\n*기본 선택 : 위험의견");
 					selectAssemble = !isNaN(selectAssemble) && selectAssemble != 0  ? selectAssemble : 1;
@@ -62,41 +63,44 @@ var assembleDo = function() {
 				});
 				opinionCnt=0;
 				opinionViewCnt=0;
-				isInitial=1;
-				isIgnoreChk =0;
+				isNotIinitial=1;
 			}
-			if(isInitial) {
-				var sCnt = opinionViewCnt*opinionPerCnt;
-				var eCnt = (opinionViewCnt+1)*opinionPerCnt-1;
-				if(opinionList.length==0){
-					isIgnoreChk = confirm('선택한 입법안이 없습니다\r\n확인체크 된 입법안도 포함시켜 검색할까요?');
-					if (isIgnoreChk) {
-						isInitial = 0;
+			var sCnt = opinionViewCnt*opinionPerCnt;
+			var eCnt = (opinionViewCnt+1)*opinionPerCnt-1;
+			if(opinionList.length==0 && !isIgnoreChk){
+				isIgnoreChk = confirm('선택한 입법안이 없습니다\r\n확인체크 된 입법안도 포함시켜 검색할까요?');
+				if (isIgnoreChk) {
+					isNotIinitial = 0;
+					assembleDo();
+				}
+			} else {
+				if(opinionList.length<eCnt+1){
+					eCnt=opinionList.length-1;
+				}
+				if (opinionList.length <= sCnt){
+					var isResearch = confirm('확인할 입법이 없습니다.\r\n검색 옵션을 다시 선택하시겠습니까?');
+					if (isResearch) {
+						isNotIinitial=0;
+						selectAssemble=0;
+						isIgnoreChk=0;
 						assembleDo();
 					}
-				} else {
-					if(opinionList.length<eCnt+1){
-						eCnt=opinionList.length-1;
-					}
-					if (opinionList.length <= sCnt){
-						alert('확인할 입법이 없습니다.');
-						return 0;
-					}
-					var isOpen = confirm('선택한 입법안이 총'+opinionList.length+'개 입니다.\r\n' + (sCnt+1) + ' ~ ' + (eCnt+1) + '의 입법안을 열겠습니다.');
-					if (isOpen) {
-						opinionViewCnt++;
-						while(sCnt <= eCnt) {
-							op = opinionList[sCnt];
-							opChk = op.querySelector('input[type=checkbox]');
-							if (!opChk.checked) {opChk.click();};
-							const vlink = document.createElement("a");
-							vlink.target = "_blank";
-							vlink.href = op.querySelector('a').href.replace("lgsltpaOngoing/view.do","lgsltpaOpn/forInsert.do").replace("lgsltpaOpn/list.do","lgsltpaOpn/forInsert.do");
-							document.body.appendChild(vlink);
-							vlink.click();
-							vlink.remove();
-							sCnt++;
-						}
+					return 0;
+				}
+				var isOpen = confirm('선택한 입법안이 총'+opinionList.length+'개 입니다.\r\n' + (sCnt+1) + ' ~ ' + (eCnt+1) + '의 입법안을 열겠습니다.');
+				if (isOpen) {
+					opinionViewCnt++;
+					while(sCnt <= eCnt) {
+						op = opinionList[sCnt];
+						opChk = op.querySelector('input[type=checkbox]');
+						if (!opChk.checked) {opChk.click();};
+						const vlink = document.createElement("a");
+						vlink.target = "_blank";
+						vlink.href = op.querySelector('p.comment').closest('a[href*="pal.assembly"]').href.replace("lgsltpaOngoing/view.do","lgsltpaOpn/forInsert.do").replace("lgsltpaOpn/list.do","lgsltpaOpn/forInsert.do");
+						document.body.appendChild(vlink);
+						vlink.click();
+						vlink.remove();
+						sCnt++;
 					}
 				}
 			}

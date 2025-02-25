@@ -1,6 +1,6 @@
 
 javascript:
-var curVersion = '250224.1';
+var curVersion = '250225.1';
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.assembly\.go\.kr/;
 var regex_paId = /[?&]lgsltPaId=([^&]+)/;
@@ -17,13 +17,13 @@ var assembleDo = function() {
 			document.body.appendChild(pasteBtn);
 			document.getElementsByClassName("pasteButton")[0].addEventListener("click", async function() {
 				try {
+					pasteBtn.remove();
 					var paId = cururl.match(regex_paId)[1];
 					clipboardText = await navigator.clipboard.readText();
 					jsonData = JSON.parse(clipboardText);
 					txt_js = jsonData.isLawful == 1 ? '찬성' : '반대';
-					if (jsonData.isAllowAiOp) {
-						txt_cn = '다음과 같은 이유로 ' + txt_js+ ' 합니다\r\n\r\n';
-						txt_cn+=jsonData[paId];	
+					if (jsonData.isAllowAiOp && aiCmt!=undefined) {
+						txt_cn = '다음과 같은 이유로 ' + txt_js+ ' 합니다\r\n\r\n'+jsonData[paId];
 					} else {
 						txt_cn = jsonData.isLawful == 1 ? '선법은 찬성합니다. 대한민국 화이팅!' :'입법독재 절대 반대합니다.';
 					}
@@ -34,18 +34,19 @@ var assembleDo = function() {
 				} finally {
 					document.querySelector('#txt_sj').value=txt_js + '합니다.';
 					document.querySelector('#txt_cn').value=txt_cn;
-					document.querySelector('#catpchaAnswer').focus();
 					const inputField = document.querySelector("#catpchaAnswer");
-					inputField.addEventListener("input", () => {
-						const value = inputField.value;
-						if (/^\d+$/.test(value) && value.length === 5) {
-							trimAllInputText();
-							if (!validate()) {return 0;}
-							$(".loading_bar").show();
-							checkWebFilter($("#frm"));
-						}
-					});
-					pasteBtn.remove();
+					if (inputField != undefined) {
+						inputField.addEventListener("input", () => {
+							const value = inputField.value;
+							if (/^\d+$/.test(value) && value.length === 5) {
+								trimAllInputText();
+								if (!validate()) {return 0;}
+								$(".loading_bar").show();
+								checkWebFilter($("#frm"));
+							}
+						});
+						inputField.focus();	
+					}
 				}
 			});
 			pasteBtn.focus();
@@ -135,8 +136,8 @@ var assembleDo = function() {
 						vlink.href = op.querySelector('p.comment').closest('a[href*="pal.assembly"]').href.replace("lgsltpaOngoing/view.do","lgsltpaOpn/forInsert.do").replace("lgsltpaOpn/list.do","lgsltpaOpn/forInsert.do");
 						if (isAllowAiOp) {
 							var paId = vlink.href.match(regex_paId)[1];
-							var opAiCmt = op.querySelector(queryStr).innerText;
-							aiCmt[paId] = opAiCmt;	
+							var opAiCmt = op.querySelector(queryStr);
+							aiCmt[paId] = opAiCmt != undefined ? opAiCmt.innerText : null;
 						}
 						document.body.appendChild(vlink);
 						vlink.click();

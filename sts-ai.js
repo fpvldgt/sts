@@ -1,6 +1,6 @@
 
 javascript:
-var curVersion = '250225.1';
+var curVersion = '250226.1';
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.assembly\.go\.kr/;
 var regex_paId = /[?&]lgsltPaId=([^&]+)/;
@@ -22,8 +22,9 @@ var assembleDo = function() {
 					clipboardText = await navigator.clipboard.readText();
 					jsonData = JSON.parse(clipboardText);
 					txt_js = jsonData.isLawful == 1 ? '찬성' : '반대';
+					var aiCmt = jsonData[paId];
 					if (jsonData.isAllowAiOp && aiCmt!=undefined) {
-						txt_cn = '다음과 같은 이유로 ' + txt_js+ ' 합니다\r\n\r\n'+jsonData[paId];
+						txt_cn = '다음과 같은 이유로 ' + txt_js+ ' 합니다\r\n\r\n'+aiCmt;
 					} else {
 						txt_cn = jsonData.isLawful == 1 ? '선법은 찬성합니다. 대한민국 화이팅!' :'입법독재 절대 반대합니다.';
 					}

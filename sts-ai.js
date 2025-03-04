@@ -1,6 +1,6 @@
 
 javascript:
-var curVersion = '250304.1';
+var curVersion = '250304.2';
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.assembly\.go\.kr/;
 var regex_paId = /[?&]lgsltPaId=([^&]+)/;
@@ -140,7 +140,7 @@ var assembleDo = function() {
 							var opAiCmtText = opAiCmt != null ? Array.from(opAiCmt.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent.trim()) : [null];
 							var opAiHCmtText = [null];
 							if (!isLawful) {
-								var opAiHCmt = document.querySelector(".hidden");
+								var opAiHCmt = op.querySelector(".hidden");
 								opAiHCmtText = opAiHCmt != null ? Array.from(opAiHCmt.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent.trim()) : [null];
 							}
 							var combined = [...opAiCmtText, ...opAiHCmtText].filter(item => item !== null && item !== undefined);

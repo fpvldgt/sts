@@ -1,11 +1,11 @@
 
 javascript:
-var curVersion = '250226.1';
+var curVersion = '250304.1';
 var cururl = document.location.href;
 var regex_pa = /https:\/\/pal\.assembly\.go\.kr/;
 var regex_paId = /[?&]lgsltPaId=([^&]+)/;
 var regex_vforkor = /https:\/\/vforkorea\.com\/assem\//;
-var isNotIinitial,isLogin,opinionStr,pattern,opinionSelCnt,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble,isLawful,txt_js,txt_cn,isAllowAiOp;
+var isNotIinitial,isLogin,opinionStr,pattern,opinionPerCnt,opinionViewCnt,opinionCurStr,opinionCurCnt,opinionList,isIgnoreChk,selectAssemble,isLawful,txt_js,txt_cn,isAllowAiOp;
 var assembleDo = function() {
 	if (regex_pa.test(cururl)) {
 		var regOp = document.querySelectorAll('ul#cnts-tab-list li a')[2];
@@ -74,7 +74,6 @@ var assembleDo = function() {
 					} else {
 						return 0;
 					};
-					opinionSelCnt = !isNaN(Number(opinionSelCnt)) && opinionSelCnt != 0 ? opinionSelCnt : 10;
 					opinionPerCnt = Number(prompt("한번에 열 의견의 개수를 입력하세요\r\n*기본 10"));
 					if (opinionPerCnt == undefined) {return 0;}
 					opinionPerCnt = !isNaN(opinionPerCnt) && opinionPerCnt != 0  ? opinionPerCnt : 10;
@@ -138,7 +137,15 @@ var assembleDo = function() {
 						if (isAllowAiOp) {
 							var paId = vlink.href.match(regex_paId)[1];
 							var opAiCmt = op.querySelector(queryStr);
-							aiCmt[paId] = opAiCmt != undefined ? opAiCmt.innerText : null;
+							var opAiCmtText = opAiCmt != null ? Array.from(opAiCmt.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent.trim()) : [null];
+							var opAiHCmtText = [null];
+							if (!isLawful) {
+								var opAiHCmt = document.querySelector(".hidden");
+								opAiHCmtText = opAiHCmt != null ? Array.from(opAiHCmt.childNodes).filter(node => node.nodeType === Node.TEXT_NODE).map(node => node.textContent.trim()) : [null];
+							}
+							var combined = [...opAiCmtText, ...opAiHCmtText].filter(item => item !== null && item !== undefined);
+							var result = combined.length > 0 ? combined.map(item => `- ${item}`).join("\n") : null;
+							aiCmt[paId] = result;
 						}
 						document.body.appendChild(vlink);
 						vlink.click();
